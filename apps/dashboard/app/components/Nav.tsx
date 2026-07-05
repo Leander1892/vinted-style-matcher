@@ -12,14 +12,14 @@ const links = [
 export function Nav() {
   return (
     <nav className="border-b border-border">
-      <div className="mx-auto max-w-4xl flex items-center gap-6 px-6 py-4">
-        <span className="font-medium">Style-Radar</span>
-        <div className="flex gap-4 text-sm text-muted-foreground">
+      <div className="mx-auto max-w-4xl flex items-center gap-4 sm:gap-6 px-4 sm:px-6 py-4 overflow-x-auto">
+        <span className="font-medium shrink-0">Style-Radar</span>
+        <div className="flex gap-4 text-sm text-muted-foreground shrink-0">
           {links.map((link) => (
             <Link
               key={link.href}
               href={link.href}
-              className="hover:text-foreground transition-colors"
+              className="hover:text-foreground transition-colors whitespace-nowrap"
             >
               {link.label}
             </Link>

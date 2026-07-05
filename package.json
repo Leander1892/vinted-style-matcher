@@ -1,0 +1,12 @@
+{
+  "name": "vinted-matching-dashboard",
+  "private": true,
+  "workspaces": [
+    "apps/*",
+    "scraper",
+    "packages/*"
+  ],
+  "scripts": {
+    "spike": "npm run spike --workspace=scraper"
+  }
+}

@@ -75,7 +75,7 @@ export default async function ProfilePage() {
             </Row>
           ))}
         </ul>
-        <form action={actions.addStyleDirection} className="flex gap-2 mt-3">
+        <form action={actions.addStyleDirection} className="flex gap-2 mt-3 flex-wrap">
           <input name="name" placeholder="Name der Stilrichtung" className="input" />
           <SubmitButton />
         </form>
@@ -89,7 +89,7 @@ export default async function ProfilePage() {
             </Row>
           ))}
         </ul>
-        <form action={actions.addSize} className="flex gap-2 mt-3">
+        <form action={actions.addSize} className="flex gap-2 mt-3 flex-wrap">
           <input name="category" placeholder="Kategorie (z.B. Oberteile)" className="input" />
           <input name="size_label" placeholder="Größe (z.B. M)" className="input" />
           <SubmitButton />
@@ -108,7 +108,7 @@ export default async function ProfilePage() {
             </Row>
           ))}
         </ul>
-        <form action={actions.upsertFitReference} className="grid grid-cols-4 gap-2 mt-3">
+        <form action={actions.upsertFitReference} className="grid grid-cols-2 sm:grid-cols-4 gap-2 mt-3">
           <input name="category" placeholder="Kategorie" className="input" required />
           <select name="source" className="input">
             <option value="own_garment">eigenes Kleidungsstück</option>
@@ -152,7 +152,7 @@ export default async function ProfilePage() {
             </Row>
           ))}
         </ul>
-        <form action={actions.addExcludedCategory} className="flex gap-2 mt-3">
+        <form action={actions.addExcludedCategory} className="flex gap-2 mt-3 flex-wrap">
           <input name="category" placeholder="Kategorie" className="input" />
           <SubmitButton />
         </form>
@@ -200,7 +200,7 @@ export default async function ProfilePage() {
             </Row>
           ))}
         </ul>
-        <form action={actions.upsertPriceLimit} className="flex gap-2 mt-3">
+        <form action={actions.upsertPriceLimit} className="flex gap-2 mt-3 flex-wrap">
           <input name="category" placeholder="Kategorie" className="input" required />
           <input name="max_price_eur" placeholder="Max. Preis €" className="input" required />
           <SubmitButton />
@@ -208,7 +208,7 @@ export default async function ProfilePage() {
       </Section>
 
       <Section title="Zielzustand" hint="z.B. gut bis sehr gut, nicht zwingend neu">
-        <form action={actions.upsertConditionTarget} className="flex gap-2">
+        <form action={actions.upsertConditionTarget} className="flex gap-2 flex-wrap">
           <select name="min_condition" defaultValue={conditionTarget?.min_condition} className="input">
             {CONDITIONS.map((c) => (
               <option key={c} value={c}>{c}</option>

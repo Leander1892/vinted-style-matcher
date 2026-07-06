@@ -6,3 +6,4 @@ node_modules/
 dist/
 build/
 .claude/settings.local.json
+supabase/.temp/

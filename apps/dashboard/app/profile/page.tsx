@@ -192,19 +192,54 @@ export default async function ProfilePage() {
         </form>
       </Section>
 
-      <Section title="Preisobergrenzen pro Kategorie">
-        <ul className="flex flex-col gap-2">
-          {(priceLimits ?? []).map((p) => (
-            <Row key={p.id} onDelete={actions.deletePriceLimit.bind(null, p.id)}>
-              {p.category}: max. {p.max_price_eur} €
-            </Row>
-          ))}
-        </ul>
-        <form action={actions.upsertPriceLimit} className="flex gap-2 mt-3 flex-wrap">
-          <input name="category" placeholder="Kategorie" className="input" required />
-          <input name="max_price_eur" placeholder="Max. Preis €" className="input" required />
-          <SubmitButton />
-        </form>
+      <Section title="Preisobergrenzen">
+        {(() => {
+          const allLimits = priceLimits ?? [];
+          const general = allLimits.find((p) => p.category === "Alle");
+          const specific = allLimits.filter((p) => p.category !== "Alle");
+          return (
+            <>
+              <div>
+                <p className="text-sm text-muted-foreground mb-2">
+                  Allgemeine Obergrenze — gilt für alles, außer eine Kategorie
+                  hat unten eine eigene Ausnahme.
+                </p>
+                <form action={actions.upsertPriceLimit} className="flex gap-2 items-center flex-wrap">
+                  <input type="hidden" name="category" value="Alle" />
+                  <input
+                    name="max_price_eur"
+                    placeholder="Max. Preis €"
+                    defaultValue={general?.max_price_eur ?? ""}
+                    className="input"
+                    required
+                  />
+                  <span className="text-sm text-muted-foreground">€</span>
+                  <SubmitButton />
+                </form>
+              </div>
+
+              <div className="mt-6 pt-5 border-t border-border">
+                <p className="text-sm font-medium mb-1">Ausnahmen pro Kategorie</p>
+                <p className="text-sm text-muted-foreground mb-3">
+                  Nur eintragen, wenn eine Kategorie bewusst von der
+                  allgemeinen Grenze abweichen soll.
+                </p>
+                <ul className="flex flex-col gap-2">
+                  {specific.map((p) => (
+                    <Row key={p.id} onDelete={actions.deletePriceLimit.bind(null, p.id)}>
+                      {p.category}: max. {p.max_price_eur} €
+                    </Row>
+                  ))}
+                </ul>
+                <form action={actions.upsertPriceLimit} className="flex gap-2 mt-3 flex-wrap">
+                  <input name="category" placeholder="Kategorie (z.B. Schuhe)" className="input" required />
+                  <input name="max_price_eur" placeholder="Max. Preis €" className="input" required />
+                  <SubmitButton />
+                </form>
+              </div>
+            </>
+          );
+        })()}
       </Section>
 
       <Section title="Zielzustand" hint="z.B. gut bis sehr gut, nicht zwingend neu">

@@ -67,10 +67,18 @@ async function main() {
         const { error } = await supabase.from("listings").upsert(
           {
             vinted_item_id: item.vintedItemId,
+            title: item.title,
+            brand_name: item.brandName,
+            size_label: item.sizeLabel,
+            status_label: item.statusLabel,
             price_eur: item.priceEur,
             url: item.url,
+            photo_url: item.photoUrl,
+            seller_id: item.sellerId,
+            seller_rating: item.sellerRating,
+            seller_reviews_count: item.sellerReviewsCount,
             last_seen_at: new Date().toISOString(),
-            raw_payload: { text: item.rawText },
+            raw_payload: item.rawPayload,
           },
           { onConflict: "vinted_item_id" }
         );

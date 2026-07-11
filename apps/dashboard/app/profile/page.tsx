@@ -5,6 +5,14 @@ import * as actions from "./actions";
 export const dynamic = "force-dynamic";
 
 const CONDITIONS = ["neu mit Etikett", "sehr gut", "gut", "zufriedenstellend"];
+const GARMENT_CATEGORIES = [
+  { value: "oberteil", label: "Oberteil" },
+  { value: "hose", label: "Hose" },
+  { value: "jacke", label: "Jacke" },
+  { value: "schuhe", label: "Schuhe" },
+];
+const FIT_TYPES = ["eng", "regular", "wide", "oversized"];
+const RISE_TYPES = ["low", "mid", "high"];
 
 export default async function ProfilePage() {
   let profile;
@@ -32,6 +40,8 @@ export default async function ProfilePage() {
     { data: excludedCategories },
     { data: keywords },
     { data: colors },
+    { data: materials },
+    { data: silhouetteRules },
     { data: priceLimits },
     { data: conditionTarget },
   ] = await Promise.all([
@@ -49,7 +59,15 @@ export default async function ProfilePage() {
       .eq("profile_id", profileId),
     supabase
       .from("profile_colors")
-      .select("id, color_name, preference, style_direction_id")
+      .select("id, color_name, role, style_direction_id")
+      .eq("profile_id", profileId),
+    supabase
+      .from("profile_materials")
+      .select("id, material, role, style_direction_id")
+      .eq("profile_id", profileId),
+    supabase
+      .from("profile_silhouette_rules")
+      .select("id, garment_category, fit_type, rise_type, notes, style_direction_id")
       .eq("profile_id", profileId),
     supabase.from("profile_price_limits").select("id, category, max_price_eur").eq("profile_id", profileId),
     supabase
@@ -62,24 +80,43 @@ export default async function ProfilePage() {
   const directions = styleDirections ?? [];
   const directionName = (id: string | null) =>
     directions.find((d) => d.id === id)?.name ?? "alle Richtungen";
+  const globalAvoidColors = (colors ?? []).filter((c) => c.style_direction_id === null);
 
   return (
     <div className="flex flex-col gap-8">
       <h1 className="text-xl font-medium">Profil: {profile.display_name}</h1>
 
-      <Section title="Stilrichtungen" hint="z.B. Vintage, Casual, Italian Smart Casual">
-        <ul className="flex flex-col gap-2">
+      <section className="rounded-xl border border-border bg-surface p-5">
+        <h2 className="font-medium">Stilrichtungen</h2>
+        <p className="text-sm text-muted-foreground mt-1">
+          Jede Richtung bündelt ihre eigene Farbpalette, Materialien und
+          Passform-Regeln — statt einer losen Wortliste.
+        </p>
+
+        <div className="flex flex-col gap-6 mt-4">
           {directions.map((d) => (
-            <Row key={d.id} onDelete={actions.deleteStyleDirection.bind(null, d.id)}>
-              {d.name}
-            </Row>
+            <StyleDirectionCard
+              key={d.id}
+              direction={d}
+              colors={(colors ?? []).filter((c) => c.style_direction_id === d.id)}
+              materials={(materials ?? []).filter((m) => m.style_direction_id === d.id)}
+              silhouetteRules={(silhouetteRules ?? []).filter((s) => s.style_direction_id === d.id)}
+            />
           ))}
-        </ul>
-        <form action={actions.addStyleDirection} className="flex gap-2 mt-3 flex-wrap">
-          <input name="name" placeholder="Name der Stilrichtung" className="input" />
+        </div>
+
+        {globalAvoidColors.length > 0 && (
+          <p className="text-sm text-muted-foreground mt-4">
+            Immer vermeiden (unabhängig von der Richtung):{" "}
+            {globalAvoidColors.map((c) => c.color_name).join(", ")}
+          </p>
+        )}
+
+        <form action={actions.addStyleDirection} className="flex gap-2 mt-5 pt-4 border-t border-border flex-wrap">
+          <input name="name" placeholder="Neue Stilrichtung (z.B. Techwear)" className="input" />
           <SubmitButton />
         </form>
-      </Section>
+      </section>
 
       <Section title="Größen">
         <ul className="flex flex-col gap-2">
@@ -98,13 +135,13 @@ export default async function ProfilePage() {
 
       <Section
         title="Passform-Referenzmaße"
-        hint="Maße eines Kleidungsstücks, das dir bereits gut passt — die wichtigste Angabe im ganzen Profil"
+        hint="Maße eines Kleidungsstücks, das dir bereits gut passt — die wichtigste Angabe im ganzen Profil. Bei Hosen ist die Beinöffnung entscheidend für 'wide leg'."
       >
         <ul className="flex flex-col gap-2">
           {(fitRefs ?? []).map((f) => (
             <Row key={f.id} onDelete={actions.deleteFitReference.bind(null, f.id)}>
               {f.category}: Brust {f.chest_cm ?? "–"}cm, Länge {f.length_cm ?? "–"}cm,
-              Schulter {f.shoulder_cm ?? "–"}cm (±{f.tolerance_cm}cm)
+              Beinöffnung {f.hem_width_cm ?? "–"}cm, Rise {f.rise_type ?? "–"} (±{f.tolerance_cm}cm)
             </Row>
           ))}
         </ul>
@@ -118,8 +155,18 @@ export default async function ProfilePage() {
           <input name="length_cm" placeholder="Länge cm" className="input" />
           <input name="shoulder_cm" placeholder="Schulter cm" className="input" />
           <input name="sleeve_cm" placeholder="Ärmel cm" className="input" />
+          <input name="armhole_width_cm" placeholder="Armloch cm" className="input" />
           <input name="waist_cm" placeholder="Taille cm" className="input" />
           <input name="inseam_cm" placeholder="Schrittlänge cm" className="input" />
+          <input name="hem_width_cm" placeholder="Beinöffnung cm" className="input" />
+          <input name="thigh_width_cm" placeholder="Oberschenkel cm" className="input" />
+          <input name="knee_width_cm" placeholder="Knieweite cm" className="input" />
+          <select name="rise_type" className="input" defaultValue="">
+            <option value="">Rise (optional)</option>
+            {RISE_TYPES.map((r) => (
+              <option key={r} value={r}>{r}</option>
+            ))}
+          </select>
           <input name="tolerance_cm" placeholder="Toleranz cm (Standard 3)" className="input" />
           <SubmitButton />
         </form>
@@ -158,7 +205,10 @@ export default async function ProfilePage() {
         </form>
       </Section>
 
-      <Section title="Stil-Keywords">
+      <Section
+        title="Zusätzliche Suchbegriffe"
+        hint="Nur für Wörter, die nicht schon über Farbe/Material/Silhouette abgedeckt sind — z.B. konkrete Modellnamen."
+      >
         <ul className="flex flex-col gap-2">
           {(keywords ?? []).map((k) => (
             <Row key={k.id} onDelete={actions.deleteStyleKeyword.bind(null, k.id)}>
@@ -167,26 +217,7 @@ export default async function ProfilePage() {
           ))}
         </ul>
         <form action={actions.addStyleKeyword} className="flex gap-2 mt-3 flex-wrap">
-          <input name="keyword" placeholder="Keyword" className="input" required />
-          <DirectionSelect directions={directions} />
-          <SubmitButton />
-        </form>
-      </Section>
-
-      <Section title="Farben">
-        <ul className="flex flex-col gap-2">
-          {(colors ?? []).map((c) => (
-            <Row key={c.id} onDelete={actions.deleteColor.bind(null, c.id)}>
-              {c.color_name} · {c.preference} · {directionName(c.style_direction_id)}
-            </Row>
-          ))}
-        </ul>
-        <form action={actions.addColor} className="flex gap-2 mt-3 flex-wrap">
-          <input name="color_name" placeholder="Farbe" className="input" required />
-          <select name="preference" className="input">
-            <option value="preferred">bevorzugt</option>
-            <option value="excluded">ausgeschlossen</option>
-          </select>
+          <input name="keyword" placeholder="Suchbegriff" className="input" required />
           <DirectionSelect directions={directions} />
           <SubmitButton />
         </form>
@@ -262,6 +293,117 @@ export default async function ProfilePage() {
   );
 }
 
+function StyleDirectionCard({
+  direction,
+  colors,
+  materials,
+  silhouetteRules,
+}: {
+  direction: { id: string; name: string };
+  colors: { id: string; color_name: string; role: string }[];
+  materials: { id: string; material: string; role: string }[];
+  silhouetteRules: {
+    id: string;
+    garment_category: string;
+    fit_type: string | null;
+    rise_type: string | null;
+    notes: string | null;
+  }[];
+}) {
+  return (
+    <div className="rounded-lg border border-border p-4">
+      <div className="flex items-center justify-between">
+        <h3 className="font-medium">{direction.name}</h3>
+        <form action={actions.deleteStyleDirection.bind(null, direction.id)}>
+          <button type="submit" className="text-muted-foreground hover:text-foreground" aria-label="Entfernen">
+            ×
+          </button>
+        </form>
+      </div>
+
+      <div className="grid sm:grid-cols-3 gap-4 mt-3">
+        <div>
+          <p className="text-sm font-medium mb-1">Farben</p>
+          <ul className="flex flex-col gap-1 mb-2">
+            {colors.map((c) => (
+              <Row key={c.id} onDelete={actions.deleteColor.bind(null, c.id)}>
+                <span className="text-sm">{c.color_name} · {c.role}</span>
+              </Row>
+            ))}
+          </ul>
+          <form action={actions.addColor} className="flex flex-col gap-1">
+            <input type="hidden" name="style_direction_id" value={direction.id} />
+            <input name="color_name" placeholder="Farbe" className="input" required />
+            <select name="role" className="input">
+              <option value="basis">Basis</option>
+              <option value="akzent">Akzent</option>
+              <option value="vermeiden">Vermeiden</option>
+            </select>
+            <SubmitButton small />
+          </form>
+        </div>
+
+        <div>
+          <p className="text-sm font-medium mb-1">Materialien</p>
+          <ul className="flex flex-col gap-1 mb-2">
+            {materials.map((m) => (
+              <Row key={m.id} onDelete={actions.deleteMaterial.bind(null, m.id)}>
+                <span className="text-sm">{m.material} · {m.role}</span>
+              </Row>
+            ))}
+          </ul>
+          <form action={actions.addMaterial} className="flex flex-col gap-1">
+            <input type="hidden" name="style_direction_id" value={direction.id} />
+            <input name="material" placeholder="Material" className="input" required />
+            <select name="role" className="input">
+              <option value="bevorzugt">Bevorzugt</option>
+              <option value="vermeiden">Vermeiden</option>
+            </select>
+            <SubmitButton small />
+          </form>
+        </div>
+
+        <div>
+          <p className="text-sm font-medium mb-1">Silhouette</p>
+          <ul className="flex flex-col gap-1 mb-2">
+            {silhouetteRules.map((s) => (
+              <Row key={s.id} onDelete={actions.deleteSilhouetteRule.bind(null, s.id)}>
+                <span className="text-sm">
+                  {s.garment_category}: {s.fit_type ?? "–"}
+                  {s.rise_type ? `, Rise ${s.rise_type}` : ""}
+                  {s.notes ? ` (${s.notes})` : ""}
+                </span>
+              </Row>
+            ))}
+          </ul>
+          <form action={actions.upsertSilhouetteRule} className="flex flex-col gap-1">
+            <input type="hidden" name="style_direction_id" value={direction.id} />
+            <select name="garment_category" className="input" required>
+              {GARMENT_CATEGORIES.map((g) => (
+                <option key={g.value} value={g.value}>{g.label}</option>
+              ))}
+            </select>
+            <select name="fit_type" className="input">
+              <option value="">Fit (optional)</option>
+              {FIT_TYPES.map((f) => (
+                <option key={f} value={f}>{f}</option>
+              ))}
+            </select>
+            <select name="rise_type" className="input">
+              <option value="">Rise (optional)</option>
+              {RISE_TYPES.map((r) => (
+                <option key={r} value={r}>{r}</option>
+              ))}
+            </select>
+            <input name="notes" placeholder="Notiz (z.B. Bundfalte)" className="input" />
+            <SubmitButton small />
+          </form>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function Section({
   title,
   hint,
@@ -310,11 +452,13 @@ function DirectionSelect({ directions }: { directions: { id: string; name: strin
   );
 }
 
-function SubmitButton() {
+function SubmitButton({ small }: { small?: boolean }) {
   return (
     <button
       type="submit"
-      className="rounded-lg bg-accent text-accent-foreground px-3 py-1.5 text-sm h-fit self-start"
+      className={`rounded-lg bg-accent text-accent-foreground h-fit self-start ${
+        small ? "px-2 py-1 text-xs" : "px-3 py-1.5 text-sm"
+      }`}
     >
       Hinzufügen
     </button>

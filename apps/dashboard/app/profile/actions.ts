@@ -59,6 +59,11 @@ export async function upsertFitReference(formData: FormData) {
       sleeve_cm: num(formData, "sleeve_cm"),
       waist_cm: num(formData, "waist_cm"),
       inseam_cm: num(formData, "inseam_cm"),
+      hem_width_cm: num(formData, "hem_width_cm"),
+      thigh_width_cm: num(formData, "thigh_width_cm"),
+      knee_width_cm: num(formData, "knee_width_cm"),
+      armhole_width_cm: num(formData, "armhole_width_cm"),
+      rise_type: str(formData, "rise_type"),
       tolerance_cm: num(formData, "tolerance_cm") ?? 3.0,
       notes: str(formData, "notes"),
     },
@@ -130,13 +135,55 @@ export async function addColor(formData: FormData) {
     profile_id: profile.id,
     style_direction_id: str(formData, "style_direction_id"),
     color_name,
-    preference: str(formData, "preference") ?? "preferred",
+    role: str(formData, "role") ?? "basis",
   });
   await revalidate();
 }
 
 export async function deleteColor(id: string) {
   await supabase.from("profile_colors").delete().eq("id", id);
+  await revalidate();
+}
+
+export async function addMaterial(formData: FormData) {
+  const profile = await getOrCreateDefaultProfile();
+  const material = str(formData, "material");
+  if (!material) return;
+  await supabase.from("profile_materials").insert({
+    profile_id: profile.id,
+    style_direction_id: str(formData, "style_direction_id"),
+    material,
+    role: str(formData, "role") ?? "bevorzugt",
+  });
+  await revalidate();
+}
+
+export async function deleteMaterial(id: string) {
+  await supabase.from("profile_materials").delete().eq("id", id);
+  await revalidate();
+}
+
+export async function upsertSilhouetteRule(formData: FormData) {
+  const profile = await getOrCreateDefaultProfile();
+  const style_direction_id = str(formData, "style_direction_id");
+  const garment_category = str(formData, "garment_category");
+  if (!style_direction_id || !garment_category) return;
+  await supabase.from("profile_silhouette_rules").upsert(
+    {
+      profile_id: profile.id,
+      style_direction_id,
+      garment_category,
+      fit_type: str(formData, "fit_type"),
+      rise_type: str(formData, "rise_type"),
+      notes: str(formData, "notes"),
+    },
+    { onConflict: "profile_id,style_direction_id,garment_category" }
+  );
+  await revalidate();
+}
+
+export async function deleteSilhouetteRule(id: string) {
+  await supabase.from("profile_silhouette_rules").delete().eq("id", id);
   await revalidate();
 }
 

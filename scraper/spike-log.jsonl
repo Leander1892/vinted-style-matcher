@@ -885,3 +885,4 @@
 {"timestamp":"2026-07-18T09:42:05.032Z","httpStatus":200,"blocked":false,"itemLinksFound":96,"note":"ok"}
 {"timestamp":"2026-07-18T10:00:43.882Z","httpStatus":200,"blocked":false,"itemLinksFound":96,"note":"ok"}
 {"timestamp":"2026-07-18T10:22:18.265Z","httpStatus":200,"blocked":false,"itemLinksFound":96,"note":"ok"}
+{"timestamp":"2026-07-18T10:43:59.608Z","httpStatus":null,"blocked":true,"itemLinksFound":0,"note":"navigation error: page.goto: Timeout 30000ms exceeded.\nCall log:\n  - navigating to \"https://www.vinted.de/catalog\", waiting until \"domcontentloaded\"\n"}

@@ -1500,3 +1500,4 @@
 {"timestamp":"2026-08-18T12:40:07.645Z","httpStatus":200,"blocked":false,"itemLinksFound":96,"note":"ok"}
 {"timestamp":"2026-08-18T13:28:42.521Z","httpStatus":200,"blocked":false,"itemLinksFound":96,"note":"ok"}
 {"timestamp":"2026-08-18T14:11:09.146Z","httpStatus":200,"blocked":false,"itemLinksFound":96,"note":"ok"}
+{"timestamp":"2026-08-18T14:54:29.503Z","httpStatus":500,"blocked":true,"itemLinksFound":0,"note":"suspected block (title: \"Artikel | Vinted\")"}

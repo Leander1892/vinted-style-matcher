@@ -1832,3 +1832,4 @@
 {"timestamp":"2026-09-04T01:04:37.862Z","httpStatus":200,"blocked":false,"itemLinksFound":96,"note":"ok"}
 {"timestamp":"2026-09-04T05:59:33.747Z","httpStatus":200,"blocked":false,"itemLinksFound":156,"note":"ok"}
 {"timestamp":"2026-09-04T10:50:42.781Z","httpStatus":200,"blocked":false,"itemLinksFound":96,"note":"ok"}
+{"timestamp":"2026-09-04T14:43:52.714Z","httpStatus":500,"blocked":true,"itemLinksFound":0,"note":"suspected block (title: \"Artikel | Vinted\")"}
